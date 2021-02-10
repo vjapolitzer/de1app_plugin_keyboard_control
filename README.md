@@ -4,13 +4,13 @@ Control your non-GHC DE1 with a keyboard!
 ## Usage
 When enabled and used in conjunction with a keyboard:  
 - Press `e` to start espresso.
-    - Press `e` (or `s`) to stop. ~~Press `w` or `f` to move to next step in advanced profile.~~ (Not yet working in de1app)
+    - Press `e` (or `s`, or any non-configured letter key) to stop. ~~Press `w` or `f` to move to next step in advanced profile.~~ (Not yet working in de1app)
 - Press `s` to start steaming
-    - Press `s` (or `e`, `w`, or `f`) to stop.
+    - Press `s` (or `e`, `w`, `f`, or any non-configured letter key) to stop.
 - Press `w` to start hot water
-    - Press `w` (or `e`, `s`, or `f`) to stop.
+    - Press `w` (or `e`, `s`, `f`, or any non-configured letter key) to stop.
 - Press `f` to start flushing
-    - Press `f` (or `e`, `s`, or `w`) to stop.  
+    - Press `f` (or `e`, `s`, `w`, or any non-configured letter key) to stop.  
     
 The functions can be configured to different letter keys in the extension settings page.
 
