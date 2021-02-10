@@ -1,13 +1,8 @@
-espresso_droid_keycode 8
 espresso_key e
 espresso_keycode 101
-flush_droid_keycode 9
 flush_key f
 flush_keycode 102
-steam_droid_keycode 22
 steam_key s
 steam_keycode 115
-water_droid_keycode 26
 water_key w
 water_keycode 119
-
