@@ -10,9 +10,11 @@ When enabled and used in conjunction with a keyboard:
 - Press `w` to start hot water
     - Press `w` (or `e`, `s`, or `f`) to stop.
 - Press `f` to start flushing
-    - Press `f` (or `e`, `s`, or `w`) to stop.
+    - Press `f` (or `e`, `s`, or `w`) to stop.  
+    
+The functions can be configured to different letter keys in the extension settings page.
 
-NOTE: The function that keeps the navbar hidden may also block keypresses. If this is the case for you, using the `ctrl` modifier may work as a hack to get the keypress through. i.e. `ctrl+e` to start (or stop) an espresso.
+NOTE: The function that keeps the navbar hidden may also block keypresses. If this is the case for you, using the `ctrl` modifier may work as a hack to get the keypress through. i.e. `ctrl+e` to start (or stop) an espresso. This may not work with non-letter keys, so the plugin currently only supports letter keys.
 
 ## Installation
 Requires de1app V1.34 or newer!  
