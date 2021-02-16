@@ -20,7 +20,7 @@ NOTE: The function that keeps the navbar hidden may also block keypresses. If th
 Requires de1app V1.34 or newer!  
 1. Exit the de1app on your tablet
 1. Plug your tablet into your computer
-1. Download and place the `keyboard_control` folder and its contents into `de1plus/plugins/` on your tablet
+1. Download and place the `plugin.tcl` and `settings.tdb` files into a new `keyboard_control` folder into `de1plus/plugins/` on your tablet
 1. Launch the de1app on your tablet
 1. Go to Settings --> App --> Extensions --> Select the keyboard_control plugin
 1. Exit and restart the de1app
