@@ -20,7 +20,7 @@ namespace eval ::plugins::${plugin_name} {
     }
 
     proc convert_key_and_save {key_cmd} {
-    if {$key_cmd == "Espresso"} {
+        if {$key_cmd == "Espresso"} {
             # force lowercase
             set ::plugins::keyboard_control::settings(espresso_key) [string tolower $::plugins::keyboard_control::settings(espresso_key)]
             # convert to ASCII
