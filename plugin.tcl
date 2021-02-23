@@ -132,28 +132,28 @@ namespace eval ::plugins::${plugin_name} {
         add_de1_widget "$page_name" entry 280 540  {
             bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; convert_key_and_save "Espresso"; hide_android_keyboard}
             bind $widget <Leave> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; convert_key_and_save "Espresso"; hide_android_keyboard}
-        } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(espresso_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
+        } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {::plugins::keyboard_control::single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(espresso_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
 
         # Steam Key Setting
         add_de1_text $page_name 280 660 -text [translate "Steam Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
         add_de1_widget "$page_name" entry 280 720  {
             bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; convert_key_and_save "Steam"; hide_android_keyboard}
             bind $widget <Leave> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; convert_key_and_save "Steam"; hide_android_keyboard}
-        } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(steam_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
+        } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {::plugins::keyboard_control::single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(steam_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
 
         # Hot Water Key Setting
         add_de1_text $page_name 280 840 -text [translate "Hot Water Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
         add_de1_widget "$page_name" entry 280 900  {
             bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; convert_key_and_save "HotWater"; hide_android_keyboard}
             bind $widget <Leave> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; convert_key_and_save "HotWater"; hide_android_keyboard}
-        } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(water_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
+        } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {::plugins::keyboard_control::single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(water_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
 
     # Flush Key Setting
         add_de1_text $page_name 280 1020 -text [translate "Flush Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
         add_de1_widget "$page_name" entry 280 1080  {
             bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; convert_key_and_save "HotWaterRinse"; hide_android_keyboard}
             bind $widget <Leave> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; convert_key_and_save "HotWaterRinse"; hide_android_keyboard}
-        } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(flush_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
+        } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {::plugins::keyboard_control::single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(flush_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
 
         return $page_name
     }
@@ -161,6 +161,6 @@ namespace eval ::plugins::${plugin_name} {
     proc main {} {
         msg [namespace current] "keyboard_control plugin enabled"
         focus .can
-        bind Canvas <KeyPress> {handle_keypress %k}
+        bind Canvas <KeyPress> {::plugins::keyboard_control::handle_keypress %k}
     }
 }
