@@ -21,26 +21,22 @@ namespace eval ::plugins::${plugin_name} {
 
     proc convert_key_and_save {key_cmd} {
         if {$key_cmd == "Espresso"} {
-            # force lowercase
-            set ::plugins::keyboard_control::settings(espresso_key) [string tolower $::plugins::keyboard_control::settings(espresso_key)]
-            # convert to ASCII
-            scan $::plugins::keyboard_control::settings(espresso_key) %c ::plugins::keyboard_control::settings(espresso_keycode)
+            set save_key espresso_key
+            set save_keycode espresso_keycode
         } elseif {$key_cmd == "Steam"} {
-            # force lowercase
-            set ::plugins::keyboard_control::settings(steam_key) [string tolower $::plugins::keyboard_control::settings(steam_key)]
-            # convert to ASCII
-            scan $::plugins::keyboard_control::settings(steam_key) %c ::plugins::keyboard_control::settings(steam_keycode)
+            set save_key steam_key
+            set save_keycode steam_keycode
         } elseif {$key_cmd == "HotWater"} {
-            # force lowercase
-            set ::plugins::keyboard_control::settings(water_key) [string tolower $::plugins::keyboard_control::settings(water_key)]
-            # convert to ASCII
-            scan $::plugins::keyboard_control::settings(water_key) %c ::plugins::keyboard_control::settings(water_keycode)
+            set save_key water_key
+            set save_keycode water_keycode
         } elseif {$key_cmd == "HotWaterRinse"} {
-            # force lowercase
-            set ::plugins::keyboard_control::settings(flush_key) [string tolower $::plugins::keyboard_control::settings(flush_key)]
-            # convert to ASCII
-            scan $::plugins::keyboard_control::settings(flush_key) %c ::plugins::keyboard_control::settings(flush_keycode)
+            set save_key flush_key
+            set save_keycode flush_keycode
         }
+        # force lowercase
+        set ::plugins::keyboard_control::settings($save_key) [string tolower $::plugins::keyboard_control::settings($save_key)]
+        # convert to ASCII
+        scan $::plugins::keyboard_control::settings($save_key) %c ::plugins::keyboard_control::settings($save_keycode)
         msg [namespace current] "Saving keyboard_control settings"
         plugins save_settings "keyboard_control"
     }
