@@ -65,7 +65,7 @@ namespace eval ::plugins::${plugin_name} {
     proc handle_keypress {keycode} {
         msg [namespace current] "Keypress detected: $keycode / $::some_droid"
         set textstate $::de1_num_state($::de1(state))
-        set kbc_cmd [keycode_to_cmd $keycode]
+        set kbc_cmd [::plugins::keyboard_control::keycode_to_cmd $keycode]
 
         if {$textstate == "Idle"} {
             if {$kbc_cmd == "Espresso"} {
