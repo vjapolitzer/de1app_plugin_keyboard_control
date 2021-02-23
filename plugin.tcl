@@ -2,11 +2,11 @@ package require de1_machine
 
 set plugin_name "keyboard_control"
 
-set ::plugins::${plugin_name}::author "Vincent Politzer"
-set ::plugins::${plugin_name}::contact "redfoxdude@gmail.com"
-set ::plugins::${plugin_name}::version 1.1.4
-set ::plugins::${plugin_name}::name "Keyboard Control"
-set ::plugins::${plugin_name}::description "Control your non-GHC DE1 with a keyboard"
+namespace eval ::plugins::${plugin_name} {
+    variable author "Vincent Politzer"
+    variable contact "redfoxdude@gmail.com"
+    variable version 1.1.5
+    variable description "Control your non-GHC DE1 with a keyboard"
 
 proc single_letter {newstr} {
     if {[string length $newstr] > 1} {
@@ -41,8 +41,8 @@ if {$key_cmd == "Espresso"} {
         # convert to ASCII
         scan $::plugins::keyboard_control::settings(flush_key) %c ::plugins::keyboard_control::settings(flush_keycode)
     }
-    msg "Saving keyboard_control settings"
-    save_plugin_settings "keyboard_control"
+    msg [namespace current] "Saving keyboard_control settings"
+    plugins save_settings "keyboard_control"
 }
 
 
@@ -63,7 +63,7 @@ proc keycode_to_cmd {keycode} {
 }
 
 proc handle_keypress {keycode} {
-	msg "Keypress detected: $keycode / $::some_droid"
+	msg [namespace current] "Keypress detected: $keycode / $::some_droid"
     set textstate $::de1_num_state($::de1(state))
     set kbc_cmd [keycode_to_cmd $keycode]
 
@@ -114,7 +114,7 @@ proc handle_keypress {keycode} {
     }
 }
 
-proc ::plugins::${plugin_name}::preload {} {
+proc preload {} {
 
     # Unique name per page
     set page_name "plugin_keyboard_control_page_default"
@@ -122,7 +122,7 @@ proc ::plugins::${plugin_name}::preload {} {
     # Background image and "Done" button
     add_de1_page "$page_name" "settings_message.png" "default"
     add_de1_text $page_name 1280 1310 -text [translate "Done"] -font Helv_10_bold -fill "#fAfBff" -anchor "center"
-    add_de1_button $page_name {say [translate {Done}] $::settings(sound_button_in); save_plugin_settings keyboard_control; page_to_show_when_off extensions}  980 1210 1580 1410 ""
+    add_de1_button $page_name {say [translate {Done}] $::settings(sound_button_in); plugins save_settings keyboard_control; page_to_show_when_off extensions}  980 1210 1580 1410 ""
 
     # Headline
     add_de1_text $page_name 1280 300 -text [translate "Keyboard Control"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center"
@@ -158,8 +158,10 @@ proc ::plugins::${plugin_name}::preload {} {
     return $page_name
 }
 
-proc ::plugins::${plugin_name}::main {} {
-    msg "keyboard_control plugin enabled"
+proc main {} {
+    msg [namespace current] "keyboard_control plugin enabled"
     focus .can
     bind Canvas <KeyPress> {handle_keypress %k}
+}
+
 }
