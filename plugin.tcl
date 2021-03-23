@@ -5,7 +5,7 @@ set plugin_name "keyboard_control"
 namespace eval ::plugins::${plugin_name} {
     variable author "Vincent Politzer"
     variable contact "redfoxdude@gmail.com"
-    variable version 1.1.5
+    variable version 1.2.0
     variable description "Control your non-GHC DE1 with a keyboard"
 
     proc single_letter {newstr} {
@@ -66,16 +66,32 @@ namespace eval ::plugins::${plugin_name} {
         if {$textstate == "Idle"} {
             if {$kbc_cmd == "Espresso"} {
                 borg toast [translate "Starting espresso"]
-                start_espresso
+                if { $::settings(skin) eq "metric" } {
+                    do_start_espresso
+                } else {
+                    start_espresso
+                }
             } elseif {$kbc_cmd == "Steam"} {
                 borg toast [translate "Starting steam"]
-                start_steam
+                if { $::settings(skin) eq "metric" } {
+                    do_start_steam
+                } else {
+                    start_steam
+                }
             } elseif {$kbc_cmd == "HotWater"} {
                 borg toast [translate "Starting hot water"]
-                start_water
+                if { $::settings(skin) eq "metric" } {
+                    do_start_water
+                } else {
+                    start_water
+                }
             } elseif {$kbc_cmd == "HotWaterRinse"} {
                 borg toast [translate "Starting flush"]
-                start_flush
+                if { $::settings(skin) eq "metric" } {
+                    do_start_flush
+                } else {
+                    start_flush
+                }
             }
         } elseif {$textstate == "Espresso"} {
             if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "Undefined")} {
