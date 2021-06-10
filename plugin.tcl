@@ -5,7 +5,7 @@ set plugin_name "keyboard_control"
 namespace eval ::plugins::${plugin_name} {
 	variable author "Vincent Politzer"
 	variable contact "redfoxdude@gmail.com"
-	variable version 1.3.2
+	variable version 1.3.3
 	variable description "Control your non-GHC DE1 with a keyboard"
 
 	proc single_letter {newstr} {
@@ -109,7 +109,7 @@ namespace eval ::plugins::${plugin_name} {
 						borg toast [translate "Stopping espresso"]
 						start_idle
 					} elseif {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam")} {
-						if {$::plugins::keyboard_control::settings(enable_next_step_tap) == 1} {
+						if {($::plugins::keyboard_control::settings(enable_next_step_tap) == 1) && ($curr_substate != "final heating") && ($curr_substate != "stabilising")} {
 							# move on to next espresso step
 							borg toast [translate "Moving to next step"]
 							start_next_step
