@@ -4,7 +4,8 @@ Control your non-GHC DE1 with a keyboard!
 ## Usage
 When enabled and used in conjunction with a keyboard:  
 - Press `e` to start espresso.
-    - Press `e` (or `s`, or any non-configured letter key) to stop. ~~Press `w` or `f` to move to next step in advanced profile.~~ (Not yet working in de1app)
+    - Press `e` (or `s`, `w`, `f`, or any non-configured letter key) to stop. 
+        - If enable_next_step_tap is toggled to true, Press `e` or `s` to move to next step in advanced profile, press `w`, `f`, or any non-configured letter key to stop.
 - Press `s` to start steaming
     - Press `s` (or `e`, `w`, `f`, or any non-configured letter key) to stop.
 - Press `w` to start hot water
@@ -12,11 +13,12 @@ When enabled and used in conjunction with a keyboard:
 - Press `f` to start flushing
     - Press `f` (or `e`, `s`, `w`, or any non-configured letter key) to stop.  
     
-The functions can be configured to different letter keys in the extension settings page.
+The functions can be configured to different letter keys in the extension settings page. Additionally, move to next step in advanced profile can be enabled.
 
 NOTE: The function that keeps the navbar hidden may also block keypresses. If this is the case for you, using the `ctrl` modifier may work as a hack to get the keypress through. i.e. `ctrl+e` to start (or stop) an espresso. This may not work with non-letter keys, so the plugin currently only supports letter keys.
 
 ## Installation
+Now included with release V1.35! Follow instructions to install on previous builds.  
 Requires de1app V1.34 or newer!  
 1. Exit the de1app on your tablet
 1. Plug your tablet into your computer

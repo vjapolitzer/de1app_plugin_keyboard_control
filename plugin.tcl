@@ -5,7 +5,7 @@ set plugin_name "keyboard_control"
 namespace eval ::plugins::${plugin_name} {
     variable author "Vincent Politzer"
     variable contact "redfoxdude@gmail.com"
-    variable version 1.2.0
+    variable version 1.3.0
     variable description "Control your non-GHC DE1 with a keyboard"
 
     proc single_letter {newstr} {
@@ -61,9 +61,10 @@ namespace eval ::plugins::${plugin_name} {
     proc handle_keypress {keycode} {
         msg [namespace current] "Keypress detected: $keycode / $::some_droid"
         set textstate $::de1_num_state($::de1(state))
+        set curr_substate $::de1(substate)
         set kbc_cmd [::plugins::keyboard_control::keycode_to_cmd $keycode]
-
-        if {$textstate == "Idle"} {
+        # Check if machine is ready
+        if {$curr_substate == 0} {
             if {$kbc_cmd == "Espresso"} {
                 borg toast [translate "Starting espresso"]
                 if { $::settings(skin) eq "metric" } {
@@ -93,36 +94,44 @@ namespace eval ::plugins::${plugin_name} {
                     start_flush
                 }
             }
-        } elseif {$textstate == "Espresso"} {
-            if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "Undefined")} {
-                # stop espresso
-                borg toast [translate "Stopping espresso"]
-                start_idle
-            } elseif {($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse")} {
-                # next_espresso_step not yet implemented
-                # borg toast [translate "Next espresso step"]
-                # next_espresso_step
-                borg toast [translate "Stopping espresso"]
-                start_idle
+        # Check if the machine is in the process of heating or ending
+        } elseif {($curr_substate != 1) && ($curr_substate != 6)} {
+            if {($textstate == "Espresso")} {
+                if {($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
+                    # stop espresso
+                    borg toast [translate "Stopping espresso"]
+                    start_idle
+                } elseif {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam")} {
+                    if {$::plugins::keyboard_control::settings(enable_next_step_tap) == 1} {
+                        # move on to next espresso step
+                        borg toast [translate "Next espresso step"]
+                        start_next_step
+                    } else {
+                        borg toast [translate "Stopping espresso"]
+                        start_idle
+                    }
+                }
+            } elseif {$textstate == "Steam"} {
+                if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
+                    # stop steam
+                    borg toast [translate "Stopping steam"]
+                    start_idle
+                }
+            } elseif {$textstate == "HotWater"} {
+                if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
+                    # stop water
+                    borg toast [translate "Stopping hot water"]
+                    start_idle
+                }
+            } elseif {$textstate == "HotWaterRinse"} {
+                if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
+                    # stop flush
+                    borg toast [translate "Stopping flush"]
+                    start_idle
+                }
             }
-        } elseif {$textstate == "Steam"} {
-            if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
-                # stop steam
-                borg toast [translate "Stopping steam"]
-                start_idle
-            }
-        } elseif {$textstate == "HotWater"} {
-            if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
-                # stop water
-                borg toast [translate "Stopping hot water"]
-                start_idle
-            }
-        } elseif {$textstate == "HotWaterRinse"} {
-            if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
-                # stop flush
-                borg toast [translate "Stopping flush"]
-                start_idle
-            }
+        } else {
+            borg toast [translate "Please wait"]
         }
     }
 
@@ -140,32 +149,35 @@ namespace eval ::plugins::${plugin_name} {
         add_de1_text $page_name 1280 300 -text [translate "Keyboard Control"] -font Helv_20_bold -width 1200 -fill "#444444" -anchor "center" -justify "center"
 
         # Espresso Key Setting
-        add_de1_text $page_name 280 480 -text [translate "Espresso Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
-        add_de1_widget "$page_name" entry 280 540  {
+        add_de1_text $page_name 280 440 -text [translate "Espresso Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
+        add_de1_widget "$page_name" entry 280 500  {
             bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; ::plugins::keyboard_control::convert_key_and_save "Espresso"; hide_android_keyboard}
             bind $widget <Leave> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; ::plugins::keyboard_control::convert_key_and_save "Espresso"; hide_android_keyboard}
         } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {::plugins::keyboard_control::single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(espresso_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
 
         # Steam Key Setting
-        add_de1_text $page_name 280 660 -text [translate "Steam Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
-        add_de1_widget "$page_name" entry 280 720  {
+        add_de1_text $page_name 280 600 -text [translate "Steam Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
+        add_de1_widget "$page_name" entry 280 660  {
             bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; ::plugins::keyboard_control::convert_key_and_save "Steam"; hide_android_keyboard}
             bind $widget <Leave> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; ::plugins::keyboard_control::convert_key_and_save "Steam"; hide_android_keyboard}
         } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {::plugins::keyboard_control::single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(steam_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
 
         # Hot Water Key Setting
-        add_de1_text $page_name 280 840 -text [translate "Hot Water Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
-        add_de1_widget "$page_name" entry 280 900  {
+        add_de1_text $page_name 280 760 -text [translate "Hot Water Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
+        add_de1_widget "$page_name" entry 280 820  {
             bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; ::plugins::keyboard_control::convert_key_and_save "HotWater"; hide_android_keyboard}
             bind $widget <Leave> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; ::plugins::keyboard_control::convert_key_and_save "HotWater"; hide_android_keyboard}
         } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {::plugins::keyboard_control::single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(water_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
 
-    # Flush Key Setting
-        add_de1_text $page_name 280 1020 -text [translate "Flush Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
-        add_de1_widget "$page_name" entry 280 1080  {
+        # Flush Key Setting
+        add_de1_text $page_name 280 920 -text [translate "Flush Key"] -font Helv_8 -width 300 -fill "#444444" -anchor "nw" -justify "center"
+        add_de1_widget "$page_name" entry 280 980  {
             bind $widget <Return> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; ::plugins::keyboard_control::convert_key_and_save "HotWaterRinse"; hide_android_keyboard}
             bind $widget <Leave> { say [translate {save}] $::settings(sound_button_in); borg toast [translate "Saved"]; ::plugins::keyboard_control::convert_key_and_save "HotWaterRinse"; hide_android_keyboard}
         } -width [expr {int(3 * $::globals(entry_length_multiplier))}] -validate all -validatecommand {::plugins::keyboard_control::single_letter %P} -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::plugins::keyboard_control::settings(flush_key) -relief flat  -highlightthickness 1 -highlightcolor #000000
+
+        # Next Step on Espresso or Steam key tap Setting
+        add_de1_widget "$page_name" checkbutton 260 1100 {} -text [translate "Next Step on Espresso or Steam key tap"] -indicatoron true  -font Helv_8 -bg #FFFFFF -anchor nw -foreground #4e85f4 -variable ::plugins::keyboard_control::settings(enable_next_step_tap)  -borderwidth 0 -selectcolor #FFFFFF -highlightthickness 0 -activebackground #FFFFFF  -bd 0 -activeforeground #4e85f4 -relief flat -bd 0
 
         return $page_name
     }
