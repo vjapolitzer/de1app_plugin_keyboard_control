@@ -5,7 +5,7 @@ set plugin_name "keyboard_control"
 namespace eval ::plugins::${plugin_name} {
 	variable author "Vincent Politzer"
 	variable contact "redfoxdude@gmail.com"
-	variable version 1.3.1
+	variable version 1.3.2
 	variable description "Control your non-GHC DE1 with a keyboard"
 
 	proc single_letter {newstr} {
@@ -46,16 +46,21 @@ namespace eval ::plugins::${plugin_name} {
 		# lowercase letters have a keycode offset of 93 between ASCII and Android
 		if {$::some_droid} { incr keycode 93 }
 
-		if {$keycode == $::plugins::keyboard_control::settings(espresso_keycode)} {
-			return "Espresso"
-		} elseif {$keycode == $::plugins::keyboard_control::settings(steam_keycode)} {
-			return "Steam"
-		} elseif {$keycode == $::plugins::keyboard_control::settings(water_keycode)} {
-			return "HotWater"
-		} elseif {$keycode == $::plugins::keyboard_control::settings(flush_keycode)} {
-			return "HotWaterRinse"
+		# only allow lowercase letters
+		if {$keycode >= 97 && $keycode <= 122} {
+			if {$keycode == $::plugins::keyboard_control::settings(espresso_keycode)} {
+				return "Espresso"
+			} elseif {$keycode == $::plugins::keyboard_control::settings(steam_keycode)} {
+				return "Steam"
+			} elseif {$keycode == $::plugins::keyboard_control::settings(water_keycode)} {
+				return "HotWater"
+			} elseif {$keycode == $::plugins::keyboard_control::settings(flush_keycode)} {
+				return "HotWaterRinse"
+			}
+			return "Undefined"
+		} else {
+			return "Invalid"
 		}
-		return "Undefined"
 	}
 
 	proc handle_keypress {keycode} {
@@ -63,75 +68,78 @@ namespace eval ::plugins::${plugin_name} {
 		set curr_state $::de1_num_state($::de1(state))
 		set curr_substate $::de1_substate_types($::de1(substate))
 		set kbc_cmd [::plugins::keyboard_control::keycode_to_cmd $keycode]
-		# Check if machine is ready
-		if {($curr_state == "Idle") && ($curr_substate == "ready")} {
-			if {$kbc_cmd == "Espresso"} {
-				borg toast [translate "Starting espresso"]
-				if { $::settings(skin) eq "metric" } {
-					do_start_espresso
-				} else {
-					start_espresso
-				}
-			} elseif {$kbc_cmd == "Steam"} {
-				borg toast [translate "Starting steam"]
-				if { $::settings(skin) eq "metric" } {
-					do_start_steam
-				} else {
-					start_steam
-				}
-			} elseif {$kbc_cmd == "HotWater"} {
-				borg toast [translate "Starting hot water"]
-				if { $::settings(skin) eq "metric" } {
-					do_start_water
-				} else {
-					start_water
-				}
-			} elseif {$kbc_cmd == "HotWaterRinse"} {
-				borg toast [translate "Starting flush"]
-				if { $::settings(skin) eq "metric" } {
-					do_start_flush
-				} else {
-					start_flush
-				}
-			}
-		# Check if the machine is in the process of heating or ending
-		} elseif {($curr_substate != "heating") && ($curr_substate != "ending")} {
-			if {$curr_state == "Espresso"} {
-				if {($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
-					# stop espresso
-					borg toast [translate "Stopping espresso"]
-					start_idle
-				} elseif {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam")} {
-					if {$::plugins::keyboard_control::settings(enable_next_step_tap) == 1} {
-						# move on to next espresso step
-						borg toast [translate "Moving to next step"]
-						start_next_step
+
+		if {$kbc_cmd != "Invalid"}	{
+			# Check if machine is ready
+			if {($curr_state == "Idle") && ($curr_substate == "ready")} {
+				if {$kbc_cmd == "Espresso"} {
+					borg toast [translate "Starting espresso"]
+					if { $::settings(skin) eq "metric" } {
+						do_start_espresso
 					} else {
+						start_espresso
+					}
+				} elseif {$kbc_cmd == "Steam"} {
+					borg toast [translate "Starting steam"]
+					if { $::settings(skin) eq "metric" } {
+						do_start_steam
+					} else {
+						start_steam
+					}
+				} elseif {$kbc_cmd == "HotWater"} {
+					borg toast [translate "Starting hot water"]
+					if { $::settings(skin) eq "metric" } {
+						do_start_water
+					} else {
+						start_water
+					}
+				} elseif {$kbc_cmd == "HotWaterRinse"} {
+					borg toast [translate "Starting flush"]
+					if { $::settings(skin) eq "metric" } {
+						do_start_flush
+					} else {
+						start_flush
+					}
+				}
+			# Check if the machine is in the process of heating or ending
+			} elseif {($curr_substate != "heating") && ($curr_substate != "ending")} {
+				if {$curr_state == "Espresso"} {
+					if {($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
+						# stop espresso
 						borg toast [translate "Stopping espresso"]
+						start_idle
+					} elseif {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam")} {
+						if {$::plugins::keyboard_control::settings(enable_next_step_tap) == 1} {
+							# move on to next espresso step
+							borg toast [translate "Moving to next step"]
+							start_next_step
+						} else {
+							borg toast [translate "Stopping espresso"]
+							start_idle
+						}
+					}
+				} elseif {$curr_state == "Steam"} {
+					if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
+						# stop steam
+						borg toast [translate "Stopping steam"]
+						start_idle
+					}
+				} elseif {$curr_state == "HotWater"} {
+					if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
+						# stop water
+						borg toast [translate "Stopping hot water"]
+						start_idle
+					}
+				} elseif {$curr_state == "HotWaterRinse"} {
+					if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
+						# stop flush
+						borg toast [translate "Stopping flush"]
 						start_idle
 					}
 				}
-			} elseif {$curr_state == "Steam"} {
-				if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
-					# stop steam
-					borg toast [translate "Stopping steam"]
-					start_idle
-				}
-			} elseif {$curr_state == "HotWater"} {
-				if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
-					# stop water
-					borg toast [translate "Stopping hot water"]
-					start_idle
-				}
-			} elseif {$curr_state == "HotWaterRinse"} {
-				if {($kbc_cmd == "Espresso") || ($kbc_cmd == "Steam") || ($kbc_cmd == "HotWater") || ($kbc_cmd == "HotWaterRinse") || ($kbc_cmd == "Undefined")} {
-					# stop flush
-					borg toast [translate "Stopping flush"]
-					start_idle
-				}
+			} else {
+				borg toast [translate "Please wait"]
 			}
-		} else {
-			borg toast [translate "Please wait"]
 		}
 	}
 
