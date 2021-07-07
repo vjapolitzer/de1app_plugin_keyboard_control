@@ -5,8 +5,13 @@ set plugin_name "keyboard_control"
 namespace eval ::plugins::${plugin_name} {
 	variable author "Vincent Politzer"
 	variable contact "redfoxdude@gmail.com"
-	variable version 1.3.3
+	variable version 1.4.0
 	variable description "Control your non-GHC DE1 with a keyboard"
+
+	# last_keypress_time is used to filter repeated keypresses,
+	# i.e. pressing and holding a key (or Android thinking a key is held)
+	variable last_keypress_time 0
+	variable repeated_keypress_count 0
 
 	proc single_letter {newstr} {
 		if {[string length $newstr] > 1} {
@@ -42,12 +47,26 @@ namespace eval ::plugins::${plugin_name} {
 	}
 
 
-	proc keycode_to_cmd {keycode} {
+	proc keycode_to_cmd {keycode keypress_time} {
+		variable last_keypress_time
+		variable repeated_keypress_count
 		# lowercase letters have a keycode offset of 93 between ASCII and Android
 		if {$::some_droid} { incr keycode 93 }
 
 		# only allow lowercase letters
 		if {$keycode >= 97 && $keycode <= 122} {
+			# check when the last keypress came in (not counting CTRL modifier)
+			set keypress_time_delta [expr $keypress_time - $last_keypress_time]
+			set last_keypress_time $keypress_time
+			# assume average keypress duration is ~300ms
+			if {$keypress_time_delta < 300} {
+				incr repeated_keypress_count 1
+				borg toast "[translate "Check keyboard"]: $repeated_keypress_count [translate "repeated keypresses"]"
+				msg [namespace current] "$repeated_keypress_count repeated keypresses / $keypress_time_delta since last"
+				return "Invalid"
+			}
+			set repeated_keypress_count 0
+
 			if {$keycode == $::plugins::keyboard_control::settings(espresso_keycode)} {
 				return "Espresso"
 			} elseif {$keycode == $::plugins::keyboard_control::settings(steam_keycode)} {
@@ -63,12 +82,13 @@ namespace eval ::plugins::${plugin_name} {
 		}
 	}
 
-	proc handle_keypress {keycode} {
-		msg [namespace current] "Keypress detected: $keycode / $::some_droid"
+	proc handle_keypress {keycode keypress_time} {
+		msg [namespace current] "Keypress detected: $keycode / $keypress_time / $::some_droid"
 		set curr_state $::de1_num_state($::de1(state))
 		set curr_substate $::de1_substate_types($::de1(substate))
-		set kbc_cmd [::plugins::keyboard_control::keycode_to_cmd $keycode]
+		set kbc_cmd [::plugins::keyboard_control::keycode_to_cmd $keycode $keypress_time]
 
+		msg [namespace current] "Keypress deemed: $kbc_cmd"
 		if {$kbc_cmd != "Invalid"}	{
 			# Check if machine is ready
 			if {($curr_state == "Idle") && ($curr_substate == "ready")} {
@@ -193,6 +213,6 @@ namespace eval ::plugins::${plugin_name} {
 	proc main {} {
 		msg [namespace current] "keyboard_control plugin enabled"
 		focus .can
-		bind Canvas <KeyPress> {::plugins::keyboard_control::handle_keypress %k}
+		bind Canvas <KeyPress> {::plugins::keyboard_control::handle_keypress %k %t}
 	}
 }
